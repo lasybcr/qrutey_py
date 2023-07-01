@@ -1,47 +1,71 @@
 import unittest
 from unittest.mock import patch
-import getpass
-from weefee.main import generate_weefee_qr,main
+from weefee.main import generate_weefee_qr, main
+
 
 class TestGenerateWeefeeQR(unittest.TestCase):
+    @patch("builtins.print")
+    @patch("qrcode.make")
+    @patch("qrcode.QRCode.print_ascii")
+    def test_generate_weefe_qr(self, mock_print, mock_make, mock_print_ascii):
+        # Test case 1: Testing with default authentication type, hidden status False
+        generate_weefee_qr("MyWiFi", "password")
+        mock_make.assert_called_with(
+            authentication_type="WPA", hidden=False, password="password", ssid="MyWiFi"
+        )
+        mock_print.assert_called_with("Generated WiFi QR code for SSID: MyWiFi")
+        mock_print_ascii.assert_called_once()
+        mock_make.return_value.make_image.assert_called_once()
+        mock_make.return_value.make_image.return_value.save.assert_called_with(
+            "qr_MyWiFi.png"
+        )
 
-    @patch('main.generate_weefee_qr')
-    def test_generate_weefee_qr(self, mock_generate_weefee_qr):
-        mock_generate_weefee_qr.return_value = None
-        # Testing with WPA authentication, visible SSID, and a password
-        # We expect the function to generate a QR code and print a message
-        self.assertEqual(generate_weefee_qr("WPA", "MyWiFi", "password123", False), None)
+        # Test case 2: Testing with custom authentication type, hidden status True
+        generate_weefee_qr(
+            "MyWiFi", "password", authentication_type="WPA2", hidden=True
+        )
+        mock_make.assert_called_with(
+            authentication_type="WPA2", hidden=True, password="password", ssid="MyWiFi"
+        )
+        mock_print.assert_called_with("Generated WiFi QR code for SSID: MyWiFi")
+        mock_print_ascii.assert_called_with()
+        mock_make.return_value.make_image.assert_called_with()
+        mock_make.return_value.make_image.return_value.save.assert_called_with(
+            "qr_MyWiFi.png"
+        )
 
-        # Testing with no authentication, hidden SSID, and no password
-        # We expect the function to generate a QR code and print a message
-        self.assertEqual(generate_weefee_qr("nopass", "HiddenWiFi", None, True), None)
+    @patch("builtins.print")
+    @patch("qrcode.make")
+    @patch("qrcode.QRCode.print_ascii")
+    @patch("getpass.getpass", side_effect=["test_ssid", "test_password"])
+    def test_generate_weefee_qr_valid(self, mock_getpass, mock_print_ascii, mock_make, mock_print):
+        expected_qr_code = "expected_qr_code"
+        generated_qr_code = generate_weefee_qr(
+            weefee_ssid="test_ssid", weefee_password="test_password"
+        )
+        self.assertEqual(generated_qr_code, expected_qr_code)
 
-        # Testing with WEP authentication, visible SSID, and a password
-        # We expect the function to generate a QR code and print a message
-        self.assertEqual(generate_weefee_qr("WEP", "MyWiFi", "password123", False), None)
+    @patch("builtins.print")
+    @patch("qrcode.make")
+    @patch("qrcode.QRCode.print_ascii")
+    def test_generate_weefee_qr_empty(self, mock_print_ascii, mock_make, mock_print):
+        expected_qr_code = ""
+        generated_qr_code = generate_weefee_qr(weefee_ssid="", weefee_password="")
+        self.assertEqual(generated_qr_code, expected_qr_code)
+
+    @patch("builtins.print")
+    @patch("qrcode.make")
+    @patch("qrcode.QRCode.print_ascii")
+    @patch("getpass.getpass", side_effect=["test_ssid", ""])
+    @patch("weefee.main.generate_weefee_qr")
+    def test_generate_weefee_qr_empty_password(self, mock_generate_weefee_qr, mock_getpass, mock_print_ascii, mock_make, mock_print):
+        expected_qr_code = "expected_qr_code_with_empty_password"
+        main()
+        generated_qr_code = mock_generate_weefee_qr(
+            weefee_ssid="test_ssid", weefee_password=""
+        )
+        self.assertEqual(generated_qr_code, expected_qr_code)
 
 
-    @patch('main.getpass.getpass')
-    def test_generate_weefee_qr2(self, mock_getpass):
-        mock_getpass.side_effect = ['test_ssid', 'test_password']
-        generate_weefee_qr("WPA", "test_ssid", "test_password", False)
-        # Test case 1: Test with valid inputs (WPA, non-hidden SSID, valid SSID and password)
-        
-        mock_getpass.side_effect = ['test_ssid', '']
-        generate_weefee_qr("WPA", "test_ssid", "", False)
-        # Test case 2: Test with empty password
-        
-        mock_getpass.side_effect = ['', 'test_password']
-        generate_weefee_qr("WPA", "", "test_password", False)
-        # Test case 3: Test with empty SSID
-        
-        mock_getpass.side_effect = ['', '']
-        generate_weefee_qr("WPA", "", "", False)
-        # Test case 4: Test with empty SSID and password
-        
-        mock_getpass.side_effect = ['', '']
-        generate_weefee_qr("WPA", "", "", True)
-        # Test case 5: Test with empty SSID and password and hidden SSID
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

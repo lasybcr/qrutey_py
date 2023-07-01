@@ -1,7 +1,5 @@
-# trunk-ignore(ruff/D415)
-# trunk-ignore(ruff/D400)
-"""
-__main__.py
+""".
+__main__.py  .
 """
 import getpass
 from wifi_qrcode_generator import wifi_qrcode
@@ -9,7 +7,7 @@ from wifi_qrcode_generator import wifi_qrcode
 
 # trunk-ignore(ruff/D417)
 def generate_weefee_qr(
-    authentication_type: str, weefee_ssid: str, weefee_password: str, hidden: bool
+    weefee_ssid: str, weefee_password: str, authentication_type="WPA", hidden=False
 ):
     """
     Generate a WiFi QR code for the given authentication type, SSID, password, and hidden status.
@@ -26,22 +24,21 @@ def generate_weefee_qr(
     None
     """
 
-    wifi_qrcode(
+    qrc = wifi_qrcode(
         authentication_type=authentication_type,
         hidden=hidden,
         password=weefee_password,
         ssid=weefee_ssid,
     )
     print("Generated WiFi QR code for SSID: " + weefee_ssid)
+    qrc.make_image().save(f'qr_{weefee_ssid}.png')
+    return qrc.print_ascii()
 
 
 def main():
-    AUTHENTICATION_TYPE = "WPA"
-    HIDDEN = False
     ssid = getpass.getpass("Enter SSID: ")
     password = getpass.getpass("Enter password: ")
-    generate_weefee_qr(AUTHENTICATION_TYPE, ssid, password, HIDDEN)
-
+    generate_weefee_qr(weefee_ssid=ssid, weefee_password=password)
 
 if __name__ == "__main__":  # pragma: no cover
     main()
