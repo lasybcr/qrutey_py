@@ -36,7 +36,7 @@ class TestGenerateWeefeeQR(unittest.TestCase):
     def test_main(self, mock_generate_weefee_qr, mock_print, mock_check_output):
         # Mock subprocess.check_output to return a known output
         mock_check_output.side_effect = [
-            "SSID          MODE             CHAN  RATE       SIGNAL  BARS  SECURITY\nMyWifi       Infra  36    270 Mbit/s  100     ▂▄▆█  WPA2  \n",
+            b"SSID          MODE             CHAN  RATE       SIGNAL  BARS  SECURITY\nMyWifi       Infra  36    270 Mbit/s  100     12345  WPA2  \n",
             b"connection.id:                MyWifi\n802-11-wireless-security.psk:  password123\n",
             b"",
         ]

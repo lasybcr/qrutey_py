@@ -44,7 +44,8 @@ def main():
     output = subprocess.check_output(["nmcli", "dev", "wifi"])
     output = output.splitlines()
     current_wifi = output[1].split()[1:3]
-    current_wifi_joined = ' '.join(current_wifi)
+    current_wifi_joined = ' '.join([item.decode("utf-8") for item in current_wifi])
+
     print(current_wifi_joined)
 
     # Get Wi-Fi password
