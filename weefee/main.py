@@ -2,6 +2,7 @@
 __main__.py  .
 """
 import getpass
+import subprocess
 from wifi_qrcode_generator import wifi_qrcode
 
 
@@ -30,15 +31,38 @@ def generate_weefee_qr(
         password=weefee_password,
         ssid=weefee_ssid,
     )
-    print("Generated WiFi QR code for SSID: " + weefee_ssid)
-    qrc.make_image().save(f'qr_{weefee_ssid}.png')
+    # TODO update print and return statements
+    # print only if necessary
+    # return an appropriate value
+    # is return statement needed?
+    print(f"Generated WiFi QR code for SSID: {weefee_ssid}")
+    qrc.make_image().save(f"qr_{weefee_ssid}.png")
+
     return qrc.print_ascii()
 
 
 def main():
-    ssid = getpass.getpass("Enter SSID: ")
-    password = getpass.getpass("Enter password: ")
-    generate_weefee_qr(weefee_ssid=ssid, weefee_password=password)
+    # Get current Wi-Fi name
+    output = subprocess.check_output(["nmcli", "dev", "wifi"])
+    output = output.decode("utf-8").splitlines()
+    current_wifi = output[1].split()[1:3]
+    current_wifi_joined = ' '.join(current_wifi)
+    print(current_wifi_joined)
+
+    # Get Wi-Fi password
+    output = subprocess.check_output(
+        ["nmcli", "connection", "show", current_wifi_joined]
+    )
+    output = output.decode("utf-8").splitlines()
+    password = (
+        [line for line in output if "802-11-wireless-security.psk" in line][0]
+        .split(":")[1]
+        .strip()
+    )
+
+    # Generate QR code for the current Wi-Fi
+    generate_weefee_qr(weefee_ssid=current_wifi_joined, weefee_password=password)
+
 
 if __name__ == "__main__":  # pragma: no cover
     main()
