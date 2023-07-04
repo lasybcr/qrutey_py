@@ -1,11 +1,6 @@
 # PYTHON QR CODE GENERATOR
+python package and utility to generate wifi qr code
 
 ## TODO
-TODO:
-- update readme
---- -------------------
-
-## Notes/References/Questions
-- docs/ directory or sphinx for project docs?
----------------------------------------------
+- [ ] fix "iphone unable to join error"
 
